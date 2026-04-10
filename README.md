@@ -1,6 +1,6 @@
 # minvid
 
-Compress screen recordings and lecture videos from the terminal. Drop files in, get smaller files out.
+Compress videos from the terminal. Drop files in, get smaller files out.
 
 Built with [ffmpeg](https://ffmpeg.org/) under the hood, with sensible defaults for screen recordings (low framerate, tuned for animation/text content, automatic thumbnail embedding).
 
