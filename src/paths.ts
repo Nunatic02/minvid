@@ -124,16 +124,19 @@ export function generateOutputPath(
   inputPath: string,
   outputExt: string,
   subfolder: boolean,
+  customName?: string,
 ): string {
   const parsed = path.parse(inputPath);
 
   if (subfolder) {
     const outDir = path.join(parsed.dir, "compressed");
     fs.mkdirSync(outDir, { recursive: true });
-    return dedup(path.join(outDir, parsed.name + outputExt));
+    const name = customName ?? parsed.name;
+    return dedup(path.join(outDir, name + outputExt));
   }
 
-  return dedup(path.join(parsed.dir, parsed.name + "_min" + outputExt));
+  const name = customName ?? parsed.name + "_min";
+  return dedup(path.join(parsed.dir, name + outputExt));
 }
 
 /**

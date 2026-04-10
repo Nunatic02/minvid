@@ -22,6 +22,7 @@ ${pc.dim("Usage:")}
 
 ${pc.dim("Options:")}
   -p, --preset <name>   Preset: quality, h264, fast, ultrafast, av1 (default: quality)
+  -o, --output <name>   Output file name without extension (default: <name>_min)
   -s, --subfolder       Save to compressed/ subfolder (default: _min suffix)
   -j, --jobs <n>        Parallel jobs (default: auto)
   --no-thumbnail        Don't embed thumbnail in output
@@ -39,6 +40,7 @@ ${pc.dim("Examples:")}
   minvid                                   # Interactive drag-and-drop
   minvid lecture.mp4                       # Compress with quality preset
   minvid -p fast *.mp4                     # Fast preset, all mp4s
+  minvid -o lecture_compressed lecture.mp4  # Custom output name
   minvid -p av1 -s -j 2 video1.mp4        # AV1, subfolder, 2 parallel
 `;
 
@@ -47,6 +49,7 @@ async function main() {
     args: process.argv.slice(2),
     options: {
       preset: { type: "string", short: "p", default: "quality" },
+      output: { type: "string", short: "o" },
       subfolder: { type: "boolean", short: "s", default: false },
       jobs: { type: "string", short: "j" },
       "no-thumbnail": { type: "boolean", default: false },
@@ -85,7 +88,7 @@ async function main() {
 
 async function directMode(
   positionals: string[],
-  values: { preset?: string; subfolder?: boolean; jobs?: string; "no-thumbnail"?: boolean },
+  values: { preset?: string; output?: string; subfolder?: boolean; jobs?: string; "no-thumbnail"?: boolean },
 ) {
   const presetName = values.preset ?? "quality";
   if (!PRESET_NAMES.includes(presetName)) {
@@ -97,6 +100,7 @@ async function directMode(
   const preset = PRESETS[presetName];
   const subfolder = values.subfolder ?? false;
   const thumbnail = !(values["no-thumbnail"] ?? false);
+  const customName = values.output;
   const jobs = values.jobs ? parseInt(values.jobs, 10) : defaultConcurrency();
 
   // Resolve files (expand directories into their video files)
@@ -131,7 +135,7 @@ async function directMode(
 
   p.intro(pc.bgCyan(pc.black(" minvid ")));
 
-  const results = await runCompression(files, preset, subfolder, thumbnail, files.length > 1 ? jobs : 1);
+  const results = await runCompression(files, preset, subfolder, thumbnail, files.length > 1 ? jobs : 1, customName);
   showResults(results);
 
   p.outro(pc.green("Done!"));
@@ -201,6 +205,27 @@ async function interactiveMode() {
     process.exit(0);
   }
 
+  // Step 4b: Output name
+  let customName: string | undefined;
+  if (files.length === 1) {
+    const defaultName = path.parse(files[0]).name + "_min";
+    const outputName = await p.text({
+      message: "Output file name (without extension):",
+      defaultValue: defaultName,
+      placeholder: defaultName,
+    });
+
+    if (p.isCancel(outputName)) {
+      p.cancel("Cancelled.");
+      process.exit(0);
+    }
+
+    const trimmed = outputName.trim();
+    if (trimmed && trimmed !== defaultName) {
+      customName = trimmed;
+    }
+  }
+
   // Step 5: Parallel (only for multiple files)
   let concurrency = 1;
   if (files.length > 1) {
@@ -231,7 +256,7 @@ async function interactiveMode() {
   }
 
   // Step 7: Compress
-  const results = await runCompression(files, preset, useSubfolder, useThumbnail, concurrency);
+  const results = await runCompression(files, preset, useSubfolder, useThumbnail, concurrency, customName);
 
   // Step 8: Results
   showResults(results);
@@ -247,6 +272,7 @@ async function runCompression(
   subfolder: boolean,
   thumbnail: boolean,
   concurrency: number,
+  customName?: string,
 ): Promise<CompressionResult[]> {
   if (files.length === 1) {
     // Single file: show detailed progress
@@ -260,6 +286,7 @@ async function runCompression(
         preset,
         subfolder,
         thumbnail,
+        customName,
         onProgress: (update) => {
           const pct = Math.round(update.percentage);
           s.message(
@@ -316,7 +343,7 @@ async function runCompression(
         s.message(`Compressing ${completed}/${total} files...`);
         break;
     }
-  });
+  }, customName);
 
   s.stop(`Compressed ${results.length}/${total} files`);
   return results;
@@ -352,6 +379,10 @@ function showResults(results: CompressionResult[]) {
   p.log.info(
     `Saved ${pc.bold(formatSize(totalSaved))} (${totalRatio}% reduction) in ${formatTime(totalTime / 1000)}`,
   );
+
+  for (const r of results) {
+    p.log.info(`Saved to: ${pc.cyan(r.outputPath)}`);
+  }
 }
 
 main().catch((err) => {

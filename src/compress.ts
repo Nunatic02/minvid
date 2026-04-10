@@ -17,6 +17,7 @@ export interface CompressOptions {
   preset: Preset;
   subfolder: boolean;
   thumbnail: boolean;
+  customName?: string;
   onProgress: (update: ProgressUpdate) => void;
 }
 
@@ -24,9 +25,9 @@ export interface CompressOptions {
  * Compress a single video file.
  */
 export async function compressFile(opts: CompressOptions): Promise<CompressionResult> {
-  const { inputPath, preset, subfolder, thumbnail, onProgress } = opts;
+  const { inputPath, preset, subfolder, thumbnail, customName, onProgress } = opts;
 
-  const outputPath = generateOutputPath(inputPath, preset.ext, subfolder);
+  const outputPath = generateOutputPath(inputPath, preset.ext, subfolder, customName);
   const inputSize = fs.statSync(inputPath).size;
 
   // Detect and extract cover art before encoding
