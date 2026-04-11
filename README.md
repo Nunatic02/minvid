@@ -27,7 +27,7 @@ brew install ffmpeg    # macOS
 # or: sudo apt install ffmpeg   # Debian/Ubuntu
 
 # Install minvid
-npm install -g minvid
+npm install -g @nunatic02/minvid
 ```
 
 ### From source

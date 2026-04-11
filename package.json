@@ -1,12 +1,12 @@
 {
-  "name": "minvid",
+  "name": "@nunatic02/minvid",
   "version": "0.1.0",
   "description": "Drag-and-drop video compression CLI",
   "type": "module",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Nunatic02/minvid.git"
+    "url": "git+https://github.com/Nunatic02/minvid.git"
   },
   "homepage": "https://github.com/Nunatic02/minvid",
   "keywords": [
@@ -23,7 +23,7 @@
     "dist"
   ],
   "bin": {
-    "minvid": "./dist/index.js"
+    "minvid": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",
