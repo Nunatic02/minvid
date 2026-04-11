@@ -3,13 +3,33 @@
   "version": "0.1.0",
   "description": "Video compression CLI for screen recordings",
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nunatic02/minvid.git"
+  },
+  "homepage": "https://github.com/Nunatic02/minvid",
+  "keywords": [
+    "video",
+    "compression",
+    "ffmpeg",
+    "cli",
+    "screen-recording"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "dist"
+  ],
   "bin": {
     "minvid": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "prepublishOnly": "tsc"
   },
   "dependencies": {
     "@clack/prompts": "^1.2.0",

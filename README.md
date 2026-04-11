@@ -8,13 +8,31 @@ Built with [ffmpeg](https://ffmpeg.org/) under the hood, with sensible defaults 
 
 ## Install
 
-**Prerequisites:** [Node.js](https://nodejs.org/) 18+ and [ffmpeg](https://ffmpeg.org/)
+**Prerequisites:** [ffmpeg](https://ffmpeg.org/) must be installed separately.
+
+### Homebrew (macOS)
 
 ```bash
-# Install ffmpeg (macOS)
-brew install ffmpeg
+brew tap Nunatic02/minvid
+brew install minvid
+```
+
+This installs both minvid and ffmpeg automatically.
+
+### npm
+
+```bash
+# Install ffmpeg first
+brew install ffmpeg    # macOS
+# or: sudo apt install ffmpeg   # Debian/Ubuntu
 
 # Install minvid
+npm install -g minvid
+```
+
+### From source
+
+```bash
 git clone https://github.com/Nunatic02/minvid.git
 cd minvid
 npm install
