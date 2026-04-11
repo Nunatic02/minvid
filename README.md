@@ -1,4 +1,4 @@
-<h1><img src="assets/icon.svg" width="28" /> minvid</h1>
+<h1><img src="assets/icon.svg" width="40" /> minvid</h1>
 
 Compress videos from the terminal. Drop files in, get smaller files out.
 
