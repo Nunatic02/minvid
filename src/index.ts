@@ -7,7 +7,7 @@ import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { PRESETS, PRESET_NAMES, type Preset } from "./presets.js";
 import { parseDragDropInput, isVideoFile, scanDirectory, formatSize, formatTime } from "./paths.js";
-import { checkFfmpeg, getResolution } from "./ffmpeg.js";
+import { checkFfmpeg, getResolution, getMediaInfo } from "./ffmpeg.js";
 import { compressFile, type CompressionResult } from "./compress.js";
 import { compressAll, defaultConcurrency } from "./parallel.js";
 
@@ -21,14 +21,16 @@ ${pc.dim("Usage:")}
   minvid [options] <files|folders...>  Direct mode
 
 ${pc.dim("Options:")}
-  -p, --preset <name>   Preset: quality, h264, fast, ultrafast, av1 (default: quality)
-  -r, --scale <value>   Resize: percentage (50%) or height (1080p, 720p)
-  -o, --output <name>   Output file name without extension (default: <name>_min)
-  -s, --subfolder       Save to compressed/ subfolder (default: _min suffix)
-  -j, --jobs <n>        Parallel jobs (default: auto)
-  --no-thumbnail        Don't embed thumbnail in output
-  -h, --help            Show this help
-  -v, --version         Show version
+  -p, --preset <name>       Preset: quality, h264, fast, ultrafast, av1 (default: quality)
+  -r, --scale <value>       Resize: percentage (50%) or height (1080p, 720p)
+  -f, --fps <n>             Target framerate (default: keep original)
+  -a, --audio-bitrate <br>  Re-encode audio to AAC at bitrate, e.g. 96k, 128k (default: copy)
+  -o, --output <name>       Output file name without extension (default: <name>_min)
+  -s, --subfolder           Save to compressed/ subfolder (default: _min suffix)
+  -j, --jobs <n>            Parallel jobs (default: auto)
+  --no-thumbnail            Don't embed thumbnail in output
+  -h, --help                Show this help
+  -v, --version             Show version
 
 ${pc.dim("Presets:")}
   quality     H.265 slow crf25     Best compression, ~1.1x speed
@@ -41,6 +43,8 @@ ${pc.dim("Examples:")}
   minvid                                   # Interactive drag-and-drop
   minvid lecture.mp4                       # Compress with quality preset
   minvid -p fast *.mp4                     # Fast preset, all mp4s
+  minvid -f 24 lecture.mp4                 # Limit to 24 fps
+  minvid -a 128k lecture.mp4              # Re-encode audio to AAC 128k
   minvid -o lecture_compressed lecture.mp4  # Custom output name
   minvid -r 50% lecture.mp4                # Scale to 50% of original
   minvid -r 720p lecture.mp4               # Scale to 720p height
@@ -53,6 +57,8 @@ async function main() {
     options: {
       preset: { type: "string", short: "p", default: "quality" },
       scale: { type: "string", short: "r" },
+      fps: { type: "string", short: "f" },
+      "audio-bitrate": { type: "string", short: "a" },
       output: { type: "string", short: "o" },
       subfolder: { type: "boolean", short: "s", default: false },
       jobs: { type: "string", short: "j" },
@@ -92,7 +98,7 @@ async function main() {
 
 async function directMode(
   positionals: string[],
-  values: { preset?: string; scale?: string; output?: string; subfolder?: boolean; jobs?: string; "no-thumbnail"?: boolean },
+  values: { preset?: string; scale?: string; fps?: string; "audio-bitrate"?: string; output?: string; subfolder?: boolean; jobs?: string; "no-thumbnail"?: boolean },
 ) {
   const presetName = values.preset ?? "quality";
   if (!PRESET_NAMES.includes(presetName)) {
@@ -103,6 +109,8 @@ async function directMode(
 
   const preset = PRESETS[presetName];
   const scale = values.scale;
+  const fps = values.fps ? parseInt(values.fps, 10) : undefined;
+  const audioBitrate = values["audio-bitrate"];
   const subfolder = values.subfolder ?? false;
   const thumbnail = !(values["no-thumbnail"] ?? false);
   const customName = values.output;
@@ -140,7 +148,7 @@ async function directMode(
 
   p.intro(pc.bgCyan(pc.black(" minvid ")));
 
-  const results = await runCompression(files, preset, subfolder, thumbnail, files.length > 1 ? jobs : 1, customName, scale);
+  const results = await runCompression(files, preset, subfolder, thumbnail, files.length > 1 ? jobs : 1, customName, scale, fps, audioBitrate);
   showResults(results);
 
   p.outro(pc.green("Done!"));
@@ -199,12 +207,29 @@ async function interactiveMode() {
 
   const preset = PRESETS[presetChoice];
 
+  // Probe source media info (resolution, fps, audio)
+  let sourceRes: { width: number; height: number } | null = null;
+  let sourceFps: number | null = null;
+  let sourceAudioCodec: string | null = null;
+  let sourceAudioBitrate: string | null = null;
+  try {
+    const [res, info] = await Promise.all([
+      getResolution(files[0]),
+      getMediaInfo(files[0]),
+    ]);
+    sourceRes = res;
+    sourceFps = info.fps;
+    sourceAudioCodec = info.audioCodec;
+    sourceAudioBitrate = info.audioBitrate;
+  } catch {
+    // If probe fails, we'll skip resolution and show prompts without source info
+  }
+
   // Step 4: Resolution
   let scale: string | undefined;
-  try {
-    const res = await getResolution(files[0]);
+  if (sourceRes) {
     const scaleInput = await p.text({
-      message: `Change resolution? (current: ${res.width}×${res.height})`,
+      message: `Change resolution? (current: ${sourceRes.width}×${sourceRes.height})`,
       placeholder: "e.g. 50%, 1080p, 720p — or press Enter to keep original",
     });
 
@@ -217,11 +242,88 @@ async function interactiveMode() {
     if (trimmed) {
       scale = trimmed;
     }
-  } catch {
-    // If we can't probe resolution, skip this step
   }
 
-  // Step 5: Thumbnail
+  // Step 5: Framerate
+  const sourceFpsLabel = sourceFps ? `${sourceFps} fps` : "original";
+  let fps: number | undefined;
+  const fpsChoice = await p.select({
+    message: "Framerate:",
+    options: [
+      { value: "optimized", label: `${preset.recommendedFps} fps`, hint: "recommended — good for compression" },
+      { value: "original", label: `Keep original (${sourceFpsLabel})`, hint: "no change" },
+      { value: "custom", label: "Custom", hint: "type a value" },
+    ],
+    initialValue: "optimized",
+  });
+
+  if (p.isCancel(fpsChoice)) {
+    p.cancel("Cancelled.");
+    process.exit(0);
+  }
+
+  if (fpsChoice === "optimized") {
+    fps = preset.recommendedFps;
+  } else if (fpsChoice === "custom") {
+    const fpsInput = await p.text({
+      message: "Enter target framerate:",
+      placeholder: "e.g. 24, 30, 60",
+      validate(value: string | undefined) {
+        if (!value?.trim()) return "Please enter a framerate.";
+        const n = parseInt(value.trim(), 10);
+        if (isNaN(n) || n < 1) return "Framerate must be a positive number.";
+      },
+    });
+
+    if (p.isCancel(fpsInput)) {
+      p.cancel("Cancelled.");
+      process.exit(0);
+    }
+
+    fps = parseInt(fpsInput.trim(), 10);
+  }
+
+  // Step 6: Audio
+  const sourceAudioLabel = sourceAudioCodec
+    ? `${sourceAudioCodec.toUpperCase()}${sourceAudioBitrate ? ` ${sourceAudioBitrate}` : ""}`
+    : "original";
+  let audioBitrate: string | undefined;
+  const audioChoice = await p.select({
+    message: "Audio:",
+    options: [
+      { value: "optimized", label: `AAC ${preset.recommendedAudioBitrate}`, hint: "recommended — good for compression" },
+      { value: "original", label: `Keep original (${sourceAudioLabel})`, hint: "copy without re-encoding" },
+      { value: "custom", label: "Custom AAC bitrate", hint: "type a value" },
+    ],
+    initialValue: "optimized",
+  });
+
+  if (p.isCancel(audioChoice)) {
+    p.cancel("Cancelled.");
+    process.exit(0);
+  }
+
+  if (audioChoice === "optimized") {
+    audioBitrate = preset.recommendedAudioBitrate;
+  } else if (audioChoice === "custom") {
+    const audioInput = await p.text({
+      message: "Enter audio bitrate:",
+      placeholder: "e.g. 64k, 128k, 192k, 256k",
+      validate(value: string | undefined) {
+        if (!value?.trim()) return "Please enter a bitrate.";
+        if (!/^\d+k$/i.test(value.trim())) return "Use format like 128k.";
+      },
+    });
+
+    if (p.isCancel(audioInput)) {
+      p.cancel("Cancelled.");
+      process.exit(0);
+    }
+
+    audioBitrate = audioInput.trim().toLowerCase();
+  }
+
+  // Step 7: Thumbnail
   const useThumbnail = await p.confirm({
     message: "Embed thumbnail in output?",
     initialValue: true,
@@ -232,7 +334,7 @@ async function interactiveMode() {
     process.exit(0);
   }
 
-  // Step 6: Output name
+  // Step 8: Output name
   let customName: string | undefined;
   if (files.length === 1) {
     const defaultName = path.parse(files[0]).name + "_min";
@@ -253,7 +355,7 @@ async function interactiveMode() {
     }
   }
 
-  // Step 7: Output location
+  // Step 9: Output location
   const useSubfolder = await p.confirm({
     message: "Save to compressed/ subfolder?",
     initialValue: false,
@@ -264,7 +366,7 @@ async function interactiveMode() {
     process.exit(0);
   }
 
-  // Step 8: Parallel (only for multiple files)
+  // Step 10: Parallel (only for multiple files)
   let concurrency = 1;
   if (files.length > 1) {
     const parallel = await p.confirm({
@@ -282,10 +384,10 @@ async function interactiveMode() {
     }
   }
 
-  // Step 9: Compress
-  const results = await runCompression(files, preset, useSubfolder, useThumbnail, concurrency, customName, scale);
+  // Step 11: Compress
+  const results = await runCompression(files, preset, useSubfolder, useThumbnail, concurrency, customName, scale, fps, audioBitrate);
 
-  // Step 8: Results
+  // Results
   showResults(results);
 
   p.outro(pc.green("Done!"));
@@ -301,6 +403,8 @@ async function runCompression(
   concurrency: number,
   customName?: string,
   scale?: string,
+  fps?: number,
+  audioBitrate?: string,
 ): Promise<CompressionResult[]> {
   if (files.length === 1) {
     // Single file: show detailed progress
@@ -315,6 +419,8 @@ async function runCompression(
         subfolder,
         thumbnail,
         scale,
+        fps,
+        audioBitrate,
         customName,
         onProgress: (update) => {
           const pct = Math.round(update.percentage);
@@ -372,7 +478,7 @@ async function runCompression(
         s.message(`Compressing ${completed}/${total} files...`);
         break;
     }
-  }, customName, scale);
+  }, customName, scale, fps, audioBitrate);
 
   s.stop(`Compressed ${results.length}/${total} files`);
   return results;

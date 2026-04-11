@@ -18,6 +18,8 @@ export interface CompressOptions {
   subfolder: boolean;
   thumbnail: boolean;
   scale?: string;
+  fps?: number;
+  audioBitrate?: string;
   customName?: string;
   onProgress: (update: ProgressUpdate) => void;
 }
@@ -60,12 +62,35 @@ export async function compressFile(opts: CompressOptions): Promise<CompressionRe
   const totalDuration = await getDuration(inputPath);
   const args = preset.buildArgs(inputPath, outputPath);
 
-  // Inject scale filter if requested
-  if (opts.scale) {
-    const scaleFilter = buildScaleFilter(opts.scale);
+  // Build video filter chain (fps, scale)
+  const vfParts: string[] = [];
+  if (opts.fps) vfParts.push(`fps=${opts.fps}`);
+  if (opts.scale) vfParts.push(buildScaleFilter(opts.scale));
+
+  if (vfParts.length > 0) {
     const vfIdx = args.indexOf("-vf");
     if (vfIdx >= 0) {
-      args[vfIdx + 1] = args[vfIdx + 1] + "," + scaleFilter;
+      args[vfIdx + 1] = args[vfIdx + 1] + "," + vfParts.join(",");
+    } else {
+      // Insert -vf after "-i <input>"
+      const iIdx = args.indexOf("-i");
+      if (iIdx >= 0) {
+        args.splice(iIdx + 2, 0, "-vf", vfParts.join(","));
+      }
+    }
+  }
+
+  // Override audio codec/bitrate if requested
+  if (opts.audioBitrate) {
+    const caIdx = args.indexOf("-c:a");
+    if (caIdx >= 0) {
+      args[caIdx + 1] = "aac";
+      const baIdx = args.indexOf("-b:a");
+      if (baIdx >= 0) {
+        args[baIdx + 1] = opts.audioBitrate;
+      } else {
+        args.splice(caIdx + 2, 0, "-b:a", opts.audioBitrate);
+      }
     }
   }
 

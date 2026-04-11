@@ -105,6 +105,60 @@ export async function getDuration(filePath: string): Promise<number> {
   });
 }
 
+export interface MediaInfo {
+  fps: number | null;
+  audioCodec: string | null;
+  audioBitrate: string | null;
+}
+
+/**
+ * Probe video for framerate and audio stream info.
+ */
+export async function getMediaInfo(filePath: string): Promise<MediaInfo> {
+  return new Promise((resolve) => {
+    const proc = spawn("ffprobe", [
+      "-v", "quiet",
+      "-print_format", "json",
+      "-show_streams",
+      filePath,
+    ]);
+
+    let stdout = "";
+    proc.stdout.on("data", (data: Buffer) => {
+      stdout += data.toString();
+    });
+
+    proc.on("error", () => resolve({ fps: null, audioCodec: null, audioBitrate: null }));
+    proc.on("close", (code) => {
+      if (code !== 0) return resolve({ fps: null, audioCodec: null, audioBitrate: null });
+      try {
+        const json = JSON.parse(stdout);
+        const streams: any[] = json.streams ?? [];
+
+        const video = streams.find((s: any) => s.codec_type === "video" && s.disposition?.attached_pic !== 1);
+        const audio = streams.find((s: any) => s.codec_type === "audio");
+
+        let fps: number | null = null;
+        if (video?.r_frame_rate) {
+          const [num, den] = video.r_frame_rate.split("/").map(Number);
+          if (den && den > 0) fps = Math.round((num / den) * 100) / 100;
+        }
+
+        let audioCodec: string | null = audio?.codec_name ?? null;
+        let audioBitrate: string | null = null;
+        const bps = parseInt(audio?.bit_rate, 10);
+        if (!isNaN(bps)) {
+          audioBitrate = `${Math.round(bps / 1000)}k`;
+        }
+
+        resolve({ fps, audioCodec, audioBitrate });
+      } catch {
+        resolve({ fps: null, audioCodec: null, audioBitrate: null });
+      }
+    });
+  });
+}
+
 /**
  * Spawn an ffmpeg process and yield progress updates.
  * The args must include `-progress pipe:1` for this to work.

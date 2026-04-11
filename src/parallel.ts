@@ -35,6 +35,8 @@ export async function compressAll(
   onEvent: (event: ParallelEvent) => void,
   customName?: string,
   scale?: string,
+  fps?: number,
+  audioBitrate?: string,
 ): Promise<CompressionResult[]> {
   const results: CompressionResult[] = [];
   const total = files.length;
@@ -53,6 +55,8 @@ export async function compressAll(
         subfolder,
         thumbnail,
         scale,
+        fps,
+        audioBitrate,
         customName,
         onProgress: (progress) => {
           onEvent({ type: "progress", file: basename, index, total, progress });
