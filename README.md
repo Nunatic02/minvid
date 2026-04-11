@@ -1,10 +1,11 @@
-<h1><img src="assets/icon.svg" width="40" /> minvid</h1>
-
-Compress videos from the terminal. Drop files in, get smaller files out.
-
-Built with [ffmpeg](https://ffmpeg.org/) under the hood, with sensible defaults for screen recordings (low framerate, tuned for animation/text content, automatic thumbnail embedding).
-
-<img src="assets/demo.svg" alt="minvid demo" />
+<div align="center">
+  <img src="assets/icon.svg" width="80" />
+  <h1>minvid</h1>
+  <p>Compress videos from the terminal. Drop files in, get smaller files out.</p>
+  <p>Built with <a href="https://ffmpeg.org/">ffmpeg</a> under the hood, with sensible defaults for screen recordings<br/>(low framerate, tuned for animation/text content, automatic thumbnail embedding).</p>
+  <br/>
+  <img src="assets/demo.svg" alt="minvid demo" />
+</div>
 
 ## Install
 
