@@ -19,25 +19,6 @@ const WEBM_POST = (output: string) =>
   ["-map_metadata", "0", "-progress", "pipe:1", "-loglevel", "error", "-y", output] as const;
 
 export const PRESETS: Record<string, Preset> = {
-  quality: {
-    name: "quality",
-    label: "Quality (H.265)",
-    hint: "Best compression, ~1.1x speed",
-    ext: ".mp4",
-    recommendedFps: 15,
-    recommendedAudioBitrate: "96k",
-    buildArgs: (input, output) => [
-      ...COMMON_PRE,
-      "-i", input,
-      "-c:v", "libx265",
-      "-preset", "slow",
-      "-crf", "25",
-      "-tune", "animation",
-      "-c:a", "copy",
-      ...MP4_POST(output),
-    ],
-  },
-
   h264: {
     name: "h264",
     label: "H.264 Quality",
@@ -49,6 +30,25 @@ export const PRESETS: Record<string, Preset> = {
       ...COMMON_PRE,
       "-i", input,
       "-c:v", "libx264",
+      "-preset", "slow",
+      "-crf", "25",
+      "-tune", "animation",
+      "-c:a", "copy",
+      ...MP4_POST(output),
+    ],
+  },
+
+  quality: {
+    name: "quality",
+    label: "Quality (H.265)",
+    hint: "Best compression, ~1.1x speed",
+    ext: ".mp4",
+    recommendedFps: 15,
+    recommendedAudioBitrate: "96k",
+    buildArgs: (input, output) => [
+      ...COMMON_PRE,
+      "-i", input,
+      "-c:v", "libx265",
       "-preset", "slow",
       "-crf", "25",
       "-tune", "animation",

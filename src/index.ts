@@ -21,7 +21,7 @@ ${pc.dim("Usage:")}
   minvid [options] <files|folders...>  Direct mode
 
 ${pc.dim("Options:")}
-  -p, --preset <name>       Preset: quality, h264, fast, ultrafast, av1 (default: quality)
+  -p, --preset <name>       Preset: quality, h264, fast, ultrafast, av1 (default: h264)
   -r, --scale <value>       Resize: percentage (50%) or height (1080p, 720p)
   -f, --fps <n>             Target framerate (default: keep original)
   -a, --audio-bitrate <br>  Re-encode audio to AAC at bitrate, e.g. 96k, 128k (default: copy)
@@ -33,8 +33,8 @@ ${pc.dim("Options:")}
   -v, --version             Show version
 
 ${pc.dim("Presets:")}
-  quality     H.265 slow crf25     Best compression, ~1.1x speed
   h264        H.264 slow crf25    High quality + small size, ~2-3x speed
+  quality     H.265 slow crf25     Best compression, ~1.1x speed
   fast        H.264 veryfast crf30 Good balance, ~3-4x speed
   ultrafast   H.264 ultrafast crf30 Fastest, ~8-9x speed
   av1         SVT-AV1 crf51        Best quality/bit, slowest
@@ -55,7 +55,7 @@ async function main() {
   const { values, positionals } = parseArgs({
     args: process.argv.slice(2),
     options: {
-      preset: { type: "string", short: "p", default: "quality" },
+      preset: { type: "string", short: "p", default: "h264" },
       scale: { type: "string", short: "r" },
       fps: { type: "string", short: "f" },
       "audio-bitrate": { type: "string", short: "a" },
@@ -197,7 +197,7 @@ async function interactiveMode() {
       label: pr.label,
       hint: pr.hint,
     })),
-    initialValue: "quality",
+    initialValue: "h264",
   });
 
   if (p.isCancel(presetChoice)) {
