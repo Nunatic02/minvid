@@ -4,7 +4,7 @@ Compress videos from the terminal. Drop files in, get smaller files out.
 
 Built with [ffmpeg](https://ffmpeg.org/) under the hood, with sensible defaults for screen recordings (low framerate, tuned for animation/text content, automatic thumbnail embedding).
 
-[![asciicast](https://asciinema.org/a/916823.svg)](https://asciinema.org/a/916823)
+<img src="assets/demo.svg" alt="minvid demo" />
 
 ## Install
 
