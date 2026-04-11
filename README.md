@@ -55,7 +55,7 @@ minvid -s lecture.mp4               # Save to compressed/ subfolder
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `-p, --preset <name>` | Compression preset (see below) | `quality` |
+| `-p, --preset <name>` | Compression preset (see below) | `h264` |
 | `-r, --scale <value>` | Resize: percentage (`50%`) or height (`1080p`, `720p`) | original |
 | `-f, --fps <n>` | Target framerate | original (interactive defaults to 15) |
 | `-a, --audio-bitrate <br>` | Re-encode audio to AAC at given bitrate (e.g. `96k`, `128k`) | copy (interactive defaults to AAC 96k) |

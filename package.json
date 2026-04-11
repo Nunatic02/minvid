@@ -1,6 +1,6 @@
 {
   "name": "@nunatic02/minvid",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "Drag-and-drop video compression CLI",
   "type": "module",
   "license": "MIT",
