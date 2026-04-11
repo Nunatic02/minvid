@@ -1,7 +1,7 @@
 {
   "name": "minvid",
   "version": "0.1.0",
-  "description": "Video compression CLI for screen recordings",
+  "description": "Drag-and-drop video compression CLI",
   "type": "module",
   "license": "MIT",
   "repository": {

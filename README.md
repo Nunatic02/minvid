@@ -49,7 +49,7 @@ Just run `minvid` and follow the prompts — drag and drop files directly into t
 ```
 $ minvid
 
-┌  minvid — video compression for screen recordings
+┌  minvid — drag-and-drop video compression CLI
 │
 ◆  Drop video files or folders here (drag & drop or paste paths):
 │  ~/Videos/recording.mp4

@@ -14,7 +14,7 @@ import { compressAll, defaultConcurrency } from "./parallel.js";
 const VERSION = "0.1.0";
 
 const HELP = `
-${pc.bold("minvid")} — video compression CLI for screen recordings
+${pc.bold("minvid")} — drag-and-drop video compression CLI
 
 ${pc.dim("Usage:")}
   minvid                              Interactive mode
@@ -144,7 +144,7 @@ async function directMode(
 // ── Interactive mode ────────────────────────────────────────────────
 
 async function interactiveMode() {
-  p.intro(pc.bgCyan(pc.black(" minvid ")) + pc.dim(" — video compression for screen recordings"));
+  p.intro(pc.bgCyan(pc.black(" minvid ")) + pc.dim(" — drag-and-drop video compression CLI"));
 
   // Step 1: File input
   const rawInput = await p.text({
