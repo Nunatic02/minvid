@@ -2,30 +2,27 @@
 
 # 📹 minvid
 
-**Drag-and-drop video compression CLI.**
+**Interactive video compression for the terminal.**
 
-> Compress videos from the terminal. Drop files in, get smaller files out.
+> Just run `minvid`. Drop files in, pick a preset, get smaller files out. No flags to memorize.
 
 <a href="https://asciinema.org/a/916891"><img src="https://asciinema.org/a/916891.svg" alt="minvid demo" width="720" /></a>
 
 </div>
 
-## Features
+## Table of Contents
 
-- **Drag & drop** — drop files right into your terminal
-- **90%+ compression** — screen recordings go from 800 MB to under 50 MB
-- **5 presets** — from ultrafast to maximum quality (H.264, H.265, AV1)
-- **Resolution scaling** — downscale by percentage or target height (720p, 1080p)
-- **Batch processing** — compress entire folders with parallel jobs
-- **Smart thumbnails** — auto-extracts a representative frame to avoid black thumbnails
-- **Preserves cover art** — re-attaches existing cover art after compression
+- [Quick Start](#quick-start)
+- [Why](#why)
+- [Features](#features)
+- [CLI Mode](#cli-mode)
+- [Options](#options)
+- [Presets](#presets)
+- [FFmpeg Commands Under the Hood](#ffmpeg-commands-under-the-hood)
+- [Supported Formats](#supported-formats)
+- [License](#license)
 
-## Why
-
-I got tired of reusing ffmpeg commands and dealing with paths/parameters, so I made a simple tool: drag & drop a file/folder into the terminal, pick a preset, and it handles the rest.
-The presets are based on ffmpeg settings I’ve carefully tuned and tested. In my use, it reduces screen recordings by ~90% without noticeable quality loss.
-
-## Install
+## Quick Start
 
 ```bash
 brew tap Nunatic02/minvid && brew install minvid
@@ -33,15 +30,70 @@ brew tap Nunatic02/minvid && brew install minvid
 npm install -g @nunatic02/minvid
 ```
 
-Then run `minvid`.
-
-## Usage
-
-Running `minvid` with no arguments launches interactive mode. Pass files directly for CLI mode.
+Then just run:
 
 ```bash
-minvid                              # Interactive drag-and-drop
-minvid lecture.mp4                  # Compress with quality preset
+minvid
+```
+
+That's it. The interactive prompts walk you through everything:
+
+```
+$ minvid
+minvid — drag-and-drop video compression CLI
+
+? Drop video files or folders here:
+  > lecture.mp4                              # drag a file into your terminal
+
+  1 video file detected
+    lecture.mp4  824.3 MB
+
+? Choose compression preset:
+    H.264 Quality    — High quality + small size, ~2-3x speed   # ← default
+    Quality (H.265)  — Best compression, ~1.1x speed
+    Fast (H.264)     — Good balance, ~3-4x speed
+    Ultrafast (H.264) — Fastest, larger files, ~8-9x speed
+
+? Change resolution? (current: 1920×1080)
+  > 720p
+
+? Framerate:
+  > 15 fps           — recommended for compression
+
+? Audio:
+  > AAC 96k          — recommended for compression
+
+Compressing lecture.mp4  100%  speed: 2.3x
+
+lecture.mp4  824.3 MB → 41.2 MB  -95%  1m 42s
+Saved to: /Users/you/lecture_min.mp4
+Done!
+```
+
+## Why
+
+I got tired of reusing ffmpeg commands and dealing with paths/parameters, so I made a simple tool: drag & drop a file/folder into the terminal, pick a preset, and it handles the rest.
+
+The presets are based on ffmpeg settings I've carefully tuned and tested. In my use, it reduces screen recordings by ~90% without noticeable quality loss.
+
+## Features
+
+- **Interactive by default** — guided prompts, no flags to remember
+- **Drag & drop** — drop files right into your terminal
+- **90%+ compression** — screen recordings go from 800 MB to under 50 MB
+- **5 presets** — from ultrafast to maximum quality (H.264, H.265, AV1)
+- **Resolution scaling** — downscale by percentage or target height (720p, 1080p)
+- **Batch processing** — compress entire folders with parallel jobs
+- **Smart thumbnails** — auto-extracts a representative frame to avoid black thumbnails
+- **Preserves cover art** — re-attaches existing cover art after compression
+- **100% local** — powered by ffmpeg, nothing leaves your machine
+
+## CLI Mode
+
+Already know what you want? Pass files directly to skip the prompts:
+
+```bash
+minvid lecture.mp4                  # Compress with default preset
 minvid -p fast *.mp4                # Fast preset, all mp4s
 minvid -r 50% lecture.mp4           # Downscale to 50%
 minvid -r 720p lecture.mp4          # Downscale to 720p
