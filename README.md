@@ -86,7 +86,6 @@ The presets are based on ffmpeg settings I've carefully tuned and tested. In my 
 - **Batch processing** — compress entire folders with parallel jobs
 - **Smart thumbnails** — auto-extracts a representative frame to avoid black thumbnails
 - **Preserves cover art** — re-attaches existing cover art after compression
-- **100% local** — powered by ffmpeg, nothing leaves your machine
 
 ## CLI Mode
 
