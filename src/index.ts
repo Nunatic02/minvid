@@ -7,7 +7,7 @@ import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { PRESETS, PRESET_NAMES, type Preset } from "./presets.js";
 import { parseDragDropInput, isVideoFile, scanDirectory, formatSize, formatTime } from "./paths.js";
-import { checkFfmpeg } from "./ffmpeg.js";
+import { checkFfmpeg, getResolution } from "./ffmpeg.js";
 import { compressFile, type CompressionResult } from "./compress.js";
 import { compressAll, defaultConcurrency } from "./parallel.js";
 
@@ -22,6 +22,7 @@ ${pc.dim("Usage:")}
 
 ${pc.dim("Options:")}
   -p, --preset <name>   Preset: quality, h264, fast, ultrafast, av1 (default: quality)
+  -r, --scale <value>   Resize: percentage (50%) or height (1080p, 720p)
   -o, --output <name>   Output file name without extension (default: <name>_min)
   -s, --subfolder       Save to compressed/ subfolder (default: _min suffix)
   -j, --jobs <n>        Parallel jobs (default: auto)
@@ -41,6 +42,8 @@ ${pc.dim("Examples:")}
   minvid lecture.mp4                       # Compress with quality preset
   minvid -p fast *.mp4                     # Fast preset, all mp4s
   minvid -o lecture_compressed lecture.mp4  # Custom output name
+  minvid -r 50% lecture.mp4                # Scale to 50% of original
+  minvid -r 720p lecture.mp4               # Scale to 720p height
   minvid -p av1 -s -j 2 video1.mp4        # AV1, subfolder, 2 parallel
 `;
 
@@ -49,6 +52,7 @@ async function main() {
     args: process.argv.slice(2),
     options: {
       preset: { type: "string", short: "p", default: "quality" },
+      scale: { type: "string", short: "r" },
       output: { type: "string", short: "o" },
       subfolder: { type: "boolean", short: "s", default: false },
       jobs: { type: "string", short: "j" },
@@ -88,7 +92,7 @@ async function main() {
 
 async function directMode(
   positionals: string[],
-  values: { preset?: string; output?: string; subfolder?: boolean; jobs?: string; "no-thumbnail"?: boolean },
+  values: { preset?: string; scale?: string; output?: string; subfolder?: boolean; jobs?: string; "no-thumbnail"?: boolean },
 ) {
   const presetName = values.preset ?? "quality";
   if (!PRESET_NAMES.includes(presetName)) {
@@ -98,6 +102,7 @@ async function directMode(
   }
 
   const preset = PRESETS[presetName];
+  const scale = values.scale;
   const subfolder = values.subfolder ?? false;
   const thumbnail = !(values["no-thumbnail"] ?? false);
   const customName = values.output;
@@ -135,7 +140,7 @@ async function directMode(
 
   p.intro(pc.bgCyan(pc.black(" minvid ")));
 
-  const results = await runCompression(files, preset, subfolder, thumbnail, files.length > 1 ? jobs : 1, customName);
+  const results = await runCompression(files, preset, subfolder, thumbnail, files.length > 1 ? jobs : 1, customName, scale);
   showResults(results);
 
   p.outro(pc.green("Done!"));
@@ -194,18 +199,40 @@ async function interactiveMode() {
 
   const preset = PRESETS[presetChoice];
 
-  // Step 4: Output location
-  const useSubfolder = await p.confirm({
-    message: "Save to compressed/ subfolder?",
-    initialValue: false,
+  // Step 4: Resolution
+  let scale: string | undefined;
+  try {
+    const res = await getResolution(files[0]);
+    const scaleInput = await p.text({
+      message: `Change resolution? (current: ${res.width}×${res.height})`,
+      placeholder: "e.g. 50%, 1080p, 720p — or press Enter to keep original",
+    });
+
+    if (p.isCancel(scaleInput)) {
+      p.cancel("Cancelled.");
+      process.exit(0);
+    }
+
+    const trimmed = scaleInput.trim();
+    if (trimmed) {
+      scale = trimmed;
+    }
+  } catch {
+    // If we can't probe resolution, skip this step
+  }
+
+  // Step 5: Thumbnail
+  const useThumbnail = await p.confirm({
+    message: "Embed thumbnail in output?",
+    initialValue: true,
   });
 
-  if (p.isCancel(useSubfolder)) {
+  if (p.isCancel(useThumbnail)) {
     p.cancel("Cancelled.");
     process.exit(0);
   }
 
-  // Step 4b: Output name
+  // Step 6: Output name
   let customName: string | undefined;
   if (files.length === 1) {
     const defaultName = path.parse(files[0]).name + "_min";
@@ -226,7 +253,18 @@ async function interactiveMode() {
     }
   }
 
-  // Step 5: Parallel (only for multiple files)
+  // Step 7: Output location
+  const useSubfolder = await p.confirm({
+    message: "Save to compressed/ subfolder?",
+    initialValue: false,
+  });
+
+  if (p.isCancel(useSubfolder)) {
+    p.cancel("Cancelled.");
+    process.exit(0);
+  }
+
+  // Step 8: Parallel (only for multiple files)
   let concurrency = 1;
   if (files.length > 1) {
     const parallel = await p.confirm({
@@ -244,19 +282,8 @@ async function interactiveMode() {
     }
   }
 
-  // Step 6: Thumbnail
-  const useThumbnail = await p.confirm({
-    message: "Embed thumbnail in output?",
-    initialValue: true,
-  });
-
-  if (p.isCancel(useThumbnail)) {
-    p.cancel("Cancelled.");
-    process.exit(0);
-  }
-
-  // Step 7: Compress
-  const results = await runCompression(files, preset, useSubfolder, useThumbnail, concurrency, customName);
+  // Step 9: Compress
+  const results = await runCompression(files, preset, useSubfolder, useThumbnail, concurrency, customName, scale);
 
   // Step 8: Results
   showResults(results);
@@ -273,6 +300,7 @@ async function runCompression(
   thumbnail: boolean,
   concurrency: number,
   customName?: string,
+  scale?: string,
 ): Promise<CompressionResult[]> {
   if (files.length === 1) {
     // Single file: show detailed progress
@@ -286,6 +314,7 @@ async function runCompression(
         preset,
         subfolder,
         thumbnail,
+        scale,
         customName,
         onProgress: (update) => {
           const pct = Math.round(update.percentage);
@@ -343,7 +372,7 @@ async function runCompression(
         s.message(`Compressing ${completed}/${total} files...`);
         break;
     }
-  }, customName);
+  }, customName, scale);
 
   s.stop(`Compressed ${results.length}/${total} files`);
   return results;

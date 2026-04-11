@@ -77,6 +77,12 @@ minvid ~/Desktop/recordings/
 # Multiple files with parallel processing
 minvid -j 4 *.mp4
 
+# Downscale to 50% resolution
+minvid -r 50% lecture.mp4
+
+# Downscale to 720p
+minvid -r 720p lecture.mp4
+
 # Save to a compressed/ subfolder instead of _min suffix
 minvid -s lecture.mp4
 
@@ -89,6 +95,7 @@ minvid --no-thumbnail lecture.mp4
 | Flag | Description | Default |
 |---|---|---|
 | `-p, --preset <name>` | Compression preset (see below) | `quality` |
+| `-r, --scale <value>` | Resize: percentage (`50%`) or height (`1080p`, `720p`) | original |
 | `-s, --subfolder` | Save to `compressed/` subfolder | `_min` suffix |
 | `-j, --jobs <n>` | Parallel jobs for batch processing | auto |
 | `--no-thumbnail` | Don't embed thumbnail in output | enabled |

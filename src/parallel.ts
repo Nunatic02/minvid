@@ -34,6 +34,7 @@ export async function compressAll(
   concurrency: number,
   onEvent: (event: ParallelEvent) => void,
   customName?: string,
+  scale?: string,
 ): Promise<CompressionResult[]> {
   const results: CompressionResult[] = [];
   const total = files.length;
@@ -51,6 +52,7 @@ export async function compressAll(
         preset,
         subfolder,
         thumbnail,
+        scale,
         customName,
         onProgress: (progress) => {
           onEvent({ type: "progress", file: basename, index, total, progress });

@@ -35,6 +35,41 @@ function runQuiet(cmd: string, args: string[]): Promise<void> {
 }
 
 /**
+ * Get video resolution (width × height) using ffprobe.
+ */
+export async function getResolution(filePath: string): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const proc = spawn("ffprobe", [
+      "-v", "quiet",
+      "-print_format", "json",
+      "-show_streams",
+      "-select_streams", "v:0",
+      filePath,
+    ]);
+
+    let stdout = "";
+    proc.stdout.on("data", (data: Buffer) => {
+      stdout += data.toString();
+    });
+
+    proc.on("error", (err) => reject(new Error(`ffprobe failed: ${err.message}`)));
+    proc.on("close", (code) => {
+      if (code !== 0) return reject(new Error(`ffprobe exited with code ${code}`));
+      try {
+        const json = JSON.parse(stdout);
+        const stream = json.streams?.[0];
+        if (!stream?.width || !stream?.height) {
+          return reject(new Error("Could not parse resolution from ffprobe output"));
+        }
+        resolve({ width: stream.width, height: stream.height });
+      } catch (e) {
+        reject(new Error(`Failed to parse ffprobe JSON: ${e}`));
+      }
+    });
+  });
+}
+
+/**
  * Get video duration in seconds using ffprobe.
  */
 export async function getDuration(filePath: string): Promise<number> {

@@ -17,8 +17,26 @@ export interface CompressOptions {
   preset: Preset;
   subfolder: boolean;
   thumbnail: boolean;
+  scale?: string;
   customName?: string;
   onProgress: (update: ProgressUpdate) => void;
+}
+
+/**
+ * Build an ffmpeg scale filter string from user input.
+ * Accepts "50%" (percentage) or "1080p" / "720p" (height-based).
+ */
+function buildScaleFilter(scale: string): string {
+  const percentMatch = scale.match(/^(\d+)%$/);
+  if (percentMatch) {
+    const factor = parseInt(percentMatch[1]) / 100;
+    return `scale=trunc(iw*${factor}/2)*2:trunc(ih*${factor}/2)*2`;
+  }
+  const pMatch = scale.match(/^(\d+)p$/);
+  if (pMatch) {
+    return `scale=-2:${pMatch[1]}`;
+  }
+  return `scale=${scale}`;
 }
 
 /**
@@ -41,6 +59,15 @@ export async function compressFile(opts: CompressOptions): Promise<CompressionRe
 
   const totalDuration = await getDuration(inputPath);
   const args = preset.buildArgs(inputPath, outputPath);
+
+  // Inject scale filter if requested
+  if (opts.scale) {
+    const scaleFilter = buildScaleFilter(opts.scale);
+    const vfIdx = args.indexOf("-vf");
+    if (vfIdx >= 0) {
+      args[vfIdx + 1] = args[vfIdx + 1] + "," + scaleFilter;
+    }
+  }
 
   const startTime = Date.now();
   const { process: ffmpegProc, done } = spawnFfmpeg(args, totalDuration, onProgress);
