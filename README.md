@@ -21,6 +21,12 @@
 - **Preserves cover art** — re-attaches existing cover art after compression
 - **100% local** — powered by ffmpeg, nothing leaves your machine
 
+## Why
+
+I kept digging through my notes for an old ffmpeg script every time I needed to compress a screen recording. The worst part was always dealing with the input and output paths — getting them right, changing them for each file — just enough friction to make it annoying.
+
+So I built minvid: drag and drop a video into your terminal, pick a preset, and get a compressed file back. I've carefully tuned and tested the ffmpeg parameters, and in my testing it typically shrinks raw screen recordings by ~90% without any obvious quality loss.
+
 ## Install
 
 ```bash
