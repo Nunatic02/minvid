@@ -12,7 +12,8 @@
 
 ## Table of Contents
 
-- [Quick Start](#-quick-start)
+- [Install](#-install)
+- [Usage](#-usage)
 - [Why](#-why)
 - [Features](#-features)
 - [CLI Mode](#-cli-mode)
@@ -22,7 +23,7 @@
 - [Supported Formats](#-supported-formats)
 - [License](#-license)
 
-## 🚀 Quick Start
+## 📦 Install
 
 ### Homebrew (recommended)
 
@@ -38,7 +39,7 @@ npm install -g @nunatic02/minvid
 
 Requires [ffmpeg](https://ffmpeg.org) — install via `brew install ffmpeg` or from [ffmpeg.org](https://ffmpeg.org/download.html).
 
-Then just run:
+## 🚀 Usage
 
 ```bash
 minvid
