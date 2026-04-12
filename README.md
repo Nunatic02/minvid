@@ -12,17 +12,17 @@
 
 ## Table of Contents
 
-- [Quick Start](#quick-start)
-- [Why](#why)
-- [Features](#features)
-- [CLI Mode](#cli-mode)
-- [Options](#options)
-- [Presets](#presets)
-- [FFmpeg Commands Under the Hood](#ffmpeg-commands-under-the-hood)
-- [Supported Formats](#supported-formats)
-- [License](#license)
+- [Quick Start](#-quick-start)
+- [Why](#-why)
+- [Features](#-features)
+- [CLI Mode](#-cli-mode)
+- [Options](#️-options)
+- [Presets](#-presets)
+- [FFmpeg Commands Under the Hood](#-ffmpeg-commands-under-the-hood)
+- [Supported Formats](#-supported-formats)
+- [License](#-license)
 
-## Quick Start
+## 🚀 Quick Start
 
 ### Homebrew (recommended)
 
@@ -48,13 +48,13 @@ That's it. The interactive prompts walk you through everything:
 
 <img src="assets/demo.png" alt="minvid interactive mode" width="720" />
 
-## Why
+## 💡 Why
 
 I got tired of reusing ffmpeg commands and dealing with paths/parameters, so I made a simple tool: drag & drop a file/folder into the terminal, pick a preset, and it handles the rest.
 
 The presets are based on ffmpeg settings I've carefully tuned and tested. In my use, it reduces screen recordings by ~90% without noticeable quality loss.
 
-## Features
+## ✨ Features
 
 - **Interactive by default** — guided prompts, no flags to remember
 - **Drag & drop** — drop files right into your terminal
@@ -65,9 +65,10 @@ The presets are based on ffmpeg settings I've carefully tuned and tested. In my 
 - **Smart thumbnails** — auto-extracts a representative frame to avoid black thumbnails
 - **Preserves cover art** — re-attaches existing cover art after compression
 
-## CLI Mode
+## 💻 CLI Mode
 
-Already know what you want? Pass files directly to skip the prompts:
+minvid is designed as an interactive tool first — just run `minvid` and follow the prompts. But if you already know what you want, you can also pass files and flags directly:
+
 
 ```bash
 minvid lecture.mp4                  # Compress with default preset
@@ -78,7 +79,7 @@ minvid -j 4 ~/recordings/          # Batch with 4 parallel jobs
 minvid -s lecture.mp4               # Save to compressed/ subfolder
 ```
 
-## Options
+## ⚙️ Options
 
 | Flag | Description | Default |
 |------|-------------|---------|
@@ -91,7 +92,7 @@ minvid -s lecture.mp4               # Save to compressed/ subfolder
 | `-j, --jobs <n>` | Parallel jobs for batch processing | auto |
 | `--no-thumbnail` | Skip thumbnail embedding | enabled |
 
-## Presets
+## 🎛 Presets
 
 | Preset | Codec | Speed | Best for |
 |--------|-------|-------|----------|
@@ -103,7 +104,7 @@ minvid -s lecture.mp4               # Save to compressed/ subfolder
 
 In interactive mode, framerate defaults to 15 fps and audio defaults to AAC 96k (recommended for compression). In CLI mode, both default to keeping the original — pass `--fps` and `--audio-bitrate` to override.
 
-## FFmpeg commands under the hood
+## 🔧 FFmpeg commands under the hood
 
 Below are the ffmpeg commands each preset generates. Flags like `--fps`, `--audio-bitrate`, and `--scale` inject additional filters.
 
@@ -189,11 +190,11 @@ When you pass `--fps` or `--audio-bitrate`, minvid injects additional parameters
 
 Multiple video filters are chained: e.g. `--fps 15 --scale 720p` produces `-vf fps=15,scale=-2:720`.
 
-## Supported formats
+## 📁 Supported formats
 
 **Input:** `.mp4`, `.mov`, `.mkv`, `.avi`, `.webm`, `.m4v`, `.ts`, `.flv`
 **Output:** `.mp4` (H.264/H.265) or `.webm` (AV1)
 
-## License
+## 📄 License
 
 MIT
