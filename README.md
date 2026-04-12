@@ -6,7 +6,7 @@
 
 > Just run `minvid`. Drop files in, pick a preset, get smaller files out. No flags to memorize.
 
-<a href="https://asciinema.org/a/916891"><img src="https://asciinema.org/a/916891.svg" alt="minvid demo" width="720" /></a>
+<a href="https://asciinema.org/a/LpJXgRysqI9LOv2v"><img src="https://asciinema.org/a/LpJXgRysqI9LOv2v.svg" alt="minvid demo" width="720" /></a>
 
 </div>
 
@@ -37,6 +37,8 @@ minvid
 ```
 
 That's it. The interactive prompts walk you through everything:
+
+<img src="assets/demo.png" alt="minvid interactive mode" width="720" />
 
 ```
 $ minvid
