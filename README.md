@@ -113,6 +113,8 @@ Below are the ffmpeg commands each preset generates. Flags like `--fps`, `--audi
 
 ```
 ffmpeg -hide_banner -nostdin -i input.mp4 \
+  -map 0:v:0           # Select first video stream (skip cover art if present)
+  -map 0:a             # Select all audio streams (preserves additional tracks)
   -c:v libx265        # Video codec: H.265 (HEVC) — best compression ratio
   -preset slow         # Encoding speed: slower = smaller file, better quality
   -crf 25              # Constant Rate Factor: 0 = lossless, 51 = worst. 25 is a good balance
@@ -127,6 +129,8 @@ ffmpeg -hide_banner -nostdin -i input.mp4 \
 
 ```
 ffmpeg -hide_banner -nostdin -i input.mp4 \
+  -map 0:v:0           # Select first video stream (skip cover art if present)
+  -map 0:a             # Select all audio streams (preserves additional tracks)
   -c:v libx264        # Video codec: H.264 (AVC) — widely compatible
   -preset slow         # Slower encoding for better compression
   -crf 25              # Quality level: 25 gives good size/quality tradeoff
@@ -141,6 +145,8 @@ ffmpeg -hide_banner -nostdin -i input.mp4 \
 
 ```
 ffmpeg -hide_banner -nostdin -i input.mp4 \
+  -map 0:v:0           # Select first video stream (skip cover art if present)
+  -map 0:a             # Select all audio streams (preserves additional tracks)
   -c:v libx264        # Video codec: H.264
   -preset veryfast     # Much faster encoding, trades some compression efficiency
   -crf 30              # Higher CRF = smaller files, slightly lower quality
@@ -155,6 +161,8 @@ ffmpeg -hide_banner -nostdin -i input.mp4 \
 
 ```
 ffmpeg -hide_banner -nostdin -i input.mp4 \
+  -map 0:v:0           # Select first video stream (skip cover art if present)
+  -map 0:a             # Select all audio streams (preserves additional tracks)
   -c:v libx264        # Video codec: H.264
   -preset ultrafast    # Fastest possible encoding — largest files but near-instant
   -crf 30              # Higher CRF for speed, still acceptable quality
@@ -169,6 +177,8 @@ ffmpeg -hide_banner -nostdin -i input.mp4 \
 
 ```
 ffmpeg -hide_banner -nostdin -i input.mp4 \
+  -map 0:v:0           # Select first video stream (skip cover art if present)
+  -map 0:a             # Select all audio streams (preserves additional tracks)
   -c:v libsvtav1       # Video codec: AV1 via SVT-AV1 — next-gen, best quality per bit
   -crf 51              # AV1 CRF scale differs from H.264/5; 51 is a reasonable default
   -preset 7            # SVT-AV1 preset (0=slowest/best, 13=fastest). 7 balances speed/quality

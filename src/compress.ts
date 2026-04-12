@@ -62,6 +62,12 @@ export async function compressFile(opts: CompressOptions): Promise<CompressionRe
   const totalDuration = await getDuration(inputPath);
   const args = preset.buildArgs(inputPath, outputPath);
 
+  // Map first video stream + all audio streams (preserves additional audio tracks)
+  const iIdx = args.indexOf("-i");
+  if (iIdx >= 0) {
+    args.splice(iIdx + 2, 0, "-map", "0:v:0", "-map", "0:a");
+  }
+
   // Build video filter chain (fps, scale)
   const vfParts: string[] = [];
   if (opts.fps) vfParts.push(`fps=${opts.fps}`);
