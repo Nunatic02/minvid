@@ -6,7 +6,7 @@
 
 > Just run `minvid`. Drop files in, pick a preset, get smaller files out. No flags to memorize.
 
-<a href="https://asciinema.org/a/LpJXgRysqI9LOv2v"><img src="https://asciinema.org/a/LpJXgRysqI9LOv2v.svg" alt="minvid demo" width="720" /></a>
+<a href="https://asciinema.org/a/917053"><img src="https://asciinema.org/a/917053.svg" alt="minvid demo" width="720" /></a>
 
 </div>
 
@@ -39,38 +39,6 @@ minvid
 That's it. The interactive prompts walk you through everything:
 
 <img src="assets/demo.png" alt="minvid interactive mode" width="720" />
-
-```
-$ minvid
-minvid — drag-and-drop video compression CLI
-
-? Drop video files or folders here:
-  > lecture.mp4                              # drag a file into your terminal
-
-  1 video file detected
-    lecture.mp4  824.3 MB
-
-? Choose compression preset:
-    H.264 Quality    — High quality + small size, ~2-3x speed   # ← default
-    Quality (H.265)  — Best compression, ~1.1x speed
-    Fast (H.264)     — Good balance, ~3-4x speed
-    Ultrafast (H.264) — Fastest, larger files, ~8-9x speed
-
-? Change resolution? (current: 1920×1080)
-  > 720p
-
-? Framerate:
-  > 15 fps           — recommended for compression
-
-? Audio:
-  > AAC 96k          — recommended for compression
-
-Compressing lecture.mp4  100%  speed: 2.3x
-
-lecture.mp4  824.3 MB → 41.2 MB  -95%  1m 42s
-Saved to: /Users/you/lecture_min.mp4
-Done!
-```
 
 ## Why
 
