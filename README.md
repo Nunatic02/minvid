@@ -33,11 +33,11 @@ brew tap Nunatic02/minvid && brew install minvid
 
 ### Method 2: npm
 
+If ffmpeg is not installed, install it first via `brew install ffmpeg` or from [ffmpeg.org](https://ffmpeg.org/download.html).
+
 ```bash
 npm install -g @nunatic02/minvid
 ```
-
-If ffmpeg is not installed, install it first via `brew install ffmpeg` or from [ffmpeg.org](https://ffmpeg.org/download.html).
 
 ## 🚀 Usage
 
@@ -53,7 +53,7 @@ That's it. The interactive prompts walk you through everything:
 
 I got tired of reusing ffmpeg commands and dealing with paths/parameters, so I made a simple tool: drag & drop a file/folder into the terminal, pick a preset, and it handles the rest.
 
-The presets are based on ffmpeg settings I've carefully tuned and tested. In my use, it reduces screen recordings by ~90% without noticeable quality loss.
+The presets are based on ffmpeg settings I've carefully tuned and tested. In my use, it reduces screen recordings by ~90% without noticeable quality loss. The [FFmpeg commands under the hood](#-ffmpeg-commands-under-the-hood) section includes the raw ffmpeg commands and a breakdown of each parameter if you want to use or tweak them directly.
 
 ## ✨ Features
 
