@@ -25,19 +25,19 @@
 
 ## 📦 Install
 
-### Homebrew (recommended)
+### Method 1: Homebrew (recommended)
 
 ```bash
 brew tap Nunatic02/minvid && brew install minvid
 ```
 
-### npm
+### Method 2: npm
 
 ```bash
 npm install -g @nunatic02/minvid
 ```
 
-Requires [ffmpeg](https://ffmpeg.org) — install via `brew install ffmpeg` or from [ffmpeg.org](https://ffmpeg.org/download.html).
+If ffmpeg is not installed, install it first via `brew install ffmpeg` or from [ffmpeg.org](https://ffmpeg.org/download.html).
 
 ## 🚀 Usage
 
