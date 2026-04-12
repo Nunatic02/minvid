@@ -24,11 +24,19 @@
 
 ## Quick Start
 
+### Homebrew (recommended)
+
 ```bash
 brew tap Nunatic02/minvid && brew install minvid
-# or
+```
+
+### npm
+
+```bash
 npm install -g @nunatic02/minvid
 ```
+
+Requires [ffmpeg](https://ffmpeg.org) — install via `brew install ffmpeg` or from [ffmpeg.org](https://ffmpeg.org/download.html).
 
 Then just run:
 
